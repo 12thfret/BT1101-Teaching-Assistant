@@ -23,3 +23,29 @@ Topics Covered: Data Visualization, Linear Regression, Logistic Regression, Time
 
 **Summary of Useful Dplyr functions**
 <img width="958" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/3006d776-2d36-43dc-bfa0-7d3314b9282d">
+
+## Data Exploration and Visualisation
+**In the second lab session, the learning objectives are:**
+<br />
+- To be able to create data visualisation charts and frequency distribution tables through the manipulation of data
+- Useful charts include: piecharts, barcharts, scatterplots and histograms
+- Pareto Analysis of Dataset
+<br />
+
+**Barcharts**
+<br />
+<img width="692" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/a2820f72-a23a-4e29-9b5c-fa18eef3cb68">
+<br />
+<img width="605" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/f78bd617-407b-42c5-9764-358a75087dc2">
+<br />
+<img width="479" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/b9fb7cd3-d590-4a12-806d-014c1fda9a66">
+<br />
+**Histogram**
+<br />
+<img width="522" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/6e46747d-d22d-4f4a-8237-901b95d8a692">
+**Scatterplots**
+<br />
+<img width="400" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/6f28211a-2099-486c-ba00-de70b24e0f02">
+
+
+
