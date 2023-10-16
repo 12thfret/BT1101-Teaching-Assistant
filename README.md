@@ -5,7 +5,8 @@ Repository to share my experience as a teaching assistant for "Introduction to B
 * [Basics of R](#basics-of-r)
 * [Data Exploration and Visualisation](#data-exploration-and-visualisation)
 * [Statistical Measures and Probability](#statistical-measures-and-probability)
-* [Sample & Estimation and Hypothesis Testing](#same-and-estimation-and-hypothesis-testing)
+* [Sample and Estimation and Hypothesis Testing](#sample-and-estimation-and-hypothesis-testing)
+* [Linear Regression](#linear-regression)
 
 ## General info
 I conduct lessons for a small class of 15 students and handle consults and grading of assignments for the module.
@@ -60,9 +61,10 @@ Topics Covered: Data Visualization, Linear Regression, Logistic Regression, Time
 - To be able to compute probabilities of events that approximate the normal distribution, given population parameters
 <br />
 **Notes on Probability and Stats**
+<br />
 [Probability__Stats.pdf](https://github.com/12thfret/BT1101-Teaching-Assistant/files/12916928/Probability__Stats.pdf)
 
-## Sample & Estimation and Hypothesis Testing
+## Sample and Estimation and Hypothesis Testing
 **In the fourth lab session, the learning objectives are:**
 <br />
 - To be able to compute and interpret confidence intervals for means and proportion 
@@ -74,6 +76,24 @@ Topics Covered: Data Visualization, Linear Regression, Logistic Regression, Time
 <img width="729" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/e671af7d-3231-4363-ba25-583424209fb3">
 <br />
 <img width="593" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/3ea42755-0d54-49c2-9c06-eb631eb96c8e">
+
+## Linear Regression
+**In the fifth lab session, the learning objectives are:**
+<br />
+- Run simple linear regression (with one predictor) in R and interpret coefficients, p-values and goodness of fit statistics
+- Transform your variables to get a linear trend before running the linear regression model
+- Run multivariate regression analysis in R and perform regression analysis
+<br />
+<img width="478" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/1ad15395-2648-4245-bfe0-04702d66ba06">
+<br />
+<img width="641" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/836100b5-7d70-488a-8907-287e00657a9a">
+<br />
+<img width="624" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/9f18bbd9-e7d3-41ba-af5b-302d25303dcf">
+<br />
+<img width="616" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/3779e85e-1e6a-414b-9898-2d4adf83486c">
+
+
+
 
 
 
