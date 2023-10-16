@@ -43,9 +43,23 @@ Topics Covered: Data Visualization, Linear Regression, Logistic Regression, Time
 **Histogram**
 <br />
 <img width="522" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/6e46747d-d22d-4f4a-8237-901b95d8a692">
-**Scatterplots**
+<br />
+**Scattterplot**
 <br />
 <img width="400" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/6f28211a-2099-486c-ba00-de70b24e0f02">
+
+## Statistical Measures and Probability
+**In the third lab session, the learning objectives are:**
+<br />
+- To be able to generate descriptive statistics using R
+- To be able to generate tables and charts to display the descriptive statistics of one or more variables. 
+- To be able to interpret the descriptive statistics generated
+- To be able to assess if a variable is normally distributed
+- To be able to perform outlier analyses
+- To be able to compute proportions
+- To be able to compute probabilities of events that approximate the normal distribution, given population parameters
+<br />
+[Probability__Stats.pdf](https://github.com/12thfret/BT1101-Teaching-Assistant/files/12916928/Probability__Stats.pdf)
 
 
 
