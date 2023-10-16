@@ -1,0 +1,159 @@
+---
+title: 'Tutorial 6: Linear Regression (Part 2 Deadline: 16 Oct 2023 9am)'
+author: 'REPLACE WITH YOUR NAME and ID#'
+date: 'Due by 16 Oct 2023, 9:00 AM'
+output: html_document
+---
+## Preparation
+
+```{r load-libraries, echo=TRUE, message=FALSE, warning=FALSE}
+# load required packages
+library("tidyverse")
+library("readxl")
+library("rpivotTable")
+library("knitr")
+library("kableExtra")
+library("RColorBrewer")
+library("psych")
+library("ggplot2")
+```
+
+## Part One: Lab-Session Completion and Discussion
+
+-   Dataset required: `WorldBankData.csv`
+
+(Note: This dataset comes from a publically available dataset from The
+World Bank.
+<https://databank.worldbank.org/source/world-development-indicators>.)
+
+First, load in the dataset for this question. There are 8 variables in
+this real-world dataset, from 258 countries in 2016/2017: -
+Country.Name.Name: name of country - Country.Code: code given to
+country - `Human.Capital.Index`: unitless number that goes from 0
+to 1. - `GDP.per.capita.PPP` in US Dollar. This is GDP per capita, but
+taking into account the purchasing power of the local currency, by
+comparing how much it costs to buy a basket of goods (e.g. food)
+compared to the reference currency (USD). (PPP stands for Purchasing
+Power Parity) - `Health.Expenditure.per.capita` in US Dollar. -
+`Tertiary.Education.Expenditure.per.student` in US Dollar. -
+`Population`. - `Life.Expectancy.at.birth` in years. -
+`Diabetes.Prevalence` in units of % of population ages 20 to 79. -
+`Years.of.Compulsory.Education` in years.
+
+Being a data set in real world, there are lots of missing data. Be wary
+of this!
+
+```{r q1-read-dataset, echo=TRUE}
+
+dta_wb = read.csv('WorldBankData.csv')
+
+```
+
+### Question 1
+
+First, let's investigate `Human.Capital.Index`. As noted by Prime
+Minister Lee in his 2019 National Day Rally, Singapore topped the world
+on this Human Capital Index in 2018. Let's try to see what are some of
+the possible variables that correlate with this.
+
+(1a) Start off by plotting `Human.Capital.Index` (on the y-axis) versus
+`GDP.per.capita.PPP` on the x-axis. Why are we constructing this plot?
+What do you notice? What type of variable relationship exists? Is it
+linear?
+
+```{r 1a), echo=TRUE}
+plot(dta_wb$GDP.per.capita.PPP , dta_wb$Human.Capital.Index)
+
+```
+
+::: {style="color: red"}
+
+:::
+
+(1b) What type of transformation could you apply? Try a few functions
+that were shown in class: `x^2, x^3, ...`, `exp(x)`, `log10(x)`. Make a
+plot that shows a linear relationship, and describe what you did.
+
+For fun: add code into your plot to highlight the dot that represents
+Singapore.
+
+```{r 1b), echo=TRUE}
+dta_wb$pw3GDP = (dta_wb$GDP.per.capita.PPP)^3
+plot(dta_wb$pw3GDP , dta_wb$Human.Capital.Index, col = ifelse(dta_wb$Country.Name == "Singapore", "red","black"))
+
+dta_wb$pw2GDP = (dta_wb$GDP.per.capita.PPP)^2
+plot(dta_wb$pw2GDP , dta_wb$Human.Capital.Index, col = ifelse(dta_wb$Country.Name == "Singapore", "red","black"))
+
+dta_wb$logGDP = log10(dta_wb$GDP.per.capita.PPP)
+plot(dta_wb$logGDP , dta_wb$Human.Capital.Index, col = ifelse(dta_wb$Country.Name == "Singapore", "red","black"))
+
+```
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+(1c) Now that you have a plot of a linear relationship, run a linear
+regression using `lm()`, predicting `Human Capital Index`. Run
+`summary()` on the `lm` object to produce an output table. Interpret the
+output of the `lm()`. What do the `b` coefficients mean? (Interpret them
+"in English" and try to make sense of the numbers, even if they might
+seem weird at first. How many countries made it into this regression?
+(What happened to the rest?) Comment on the goodness-of-fit statistics.
+
+```{r 1c), echo=TRUE}
+summary(lm(Human.Capital.Index ~ logGDP, dta_wb))
+```
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+### Question 2
+
+-   Dataset required: `WorldBankData.csv`
+
+Let's look at another set of variables in the same dataset. This time,
+let's consider `Health.Expenditure.per.capita`, `Diabetes.Prevalence`,
+and `Life.Expectancy.at.birth`.
+
+(2a) If you had to design a predictive hypothesis with these three
+variables, what would it be? Which would be your dependent variable, and
+which would be your independent variables? Justify your answer. (Note,
+there is no necessarily "right" or "wrong" answer for this question, as
+is the case in real life, but there are more justifiable answers that
+you would feel more comfortable putting up to your boss!)
+
+
+plot(dta_wb$GDP.per.capita.PPP , dta_wb$Human.Capital.Index)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+(2b) Plot the bivariate relationships between these three variables. (In
+other words, plot x-y scatterplots. There are 3 variables, so you'll
+need 3 scatterplots.) Please also apply the same transformation in (1b)
+to `Health.Expenditure.per.capita`. Comment on the relationship between
+the variables.
+
+
+```{r 2b), echo=TRUE}
+plot(dta_wb$Life.Expectancy.at.birth , log10(dta_wb$Health.Expenditure.per.capita))
+plot(dta_wb$Life.Expectancy.at.birth , dta_wb$Diabetes.Prevalence)
+plot(log10(dta_wb$Health.Expenditure.per.capita), dta_wb$Diabetes.Prevalence)
+```
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+(2c) Run a multiple regression predicting `Life.Expectancy.at.birth`
+using the other two variables. Interpret the coefficients, spelling out
+what the numbers mean. Comment on your answers.
+
+```{r 2c), echo=TRUE}
+summary(lm(Life.Expectancy.at.birth ~ log10(Health.Expenditure.per.capita) + Diabetes.Prevalence, dta_wb))
+```
+
+::: {style="color: red"}
+**Type your answer here**
+:::

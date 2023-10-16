@@ -1,0 +1,248 @@
+---
+title: "RMarkdown Lab2 TA"
+author: "Keith Teo"
+date: "2023-09-05"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library("tidyverse")
+library("readxl")
+library("rpivotTable")
+library("knitr")
+library("kableExtra")
+library("RColorBrewer")
+```
+
+## R Markdown
+
+```{r importing_data}
+
+BD = read_excel("bank credit risk data.xlsx" , sheet = "Base Data", skip = 2)
+
+
+```
+
+
+```{r q1a), echo=FALSE}
+#Creating Total Variable
+
+BD = BD %>% mutate(Total = Checking + Savings)
+
+########################## Housing ######################################
+
+#Housing Frequency and Chart
+
+#BD %>% count(Housing) %>% rename(Frequency = n) %>% arrange(Frequency)
+  
+Housing_Freq = BD %>% count(Housing) %>% rename(Frequency = n) %>% arrange(Frequency)
+
+Housing_Freq
+
+Housing_Freq_table = kable(Housing_Freq, caption = "Frequency of Bank Customers by Housing")
+
+
+Housing_Freq_table %>% kable_styling()
+
+#Pie Chart for Housing
+
+dataset_column = Housing_Freq$Frequency # change this to actual column
+
+slice.pie_1 = dataset_column
+
+piepercent_1 = 100*round(dataset_column / sum(dataset_column), 2)
+
+label = paste(Housing_Freq$Housing, ", ", piepercent_1, "%", sep = "") # change labels accordingly
+
+pie(slice.pie_1, labels = label, col = brewer.pal(nrow(Housing_Freq) ,"Pastel2"), 
+  
+    radius = 1, cex = 0.8 )
+
+title(main = "Customer Housing Type", cex.main = 1, line = 1.5)
+```
+
+```{r q1a.1), echo=TRUE}
+########################## Job ######################################
+JobFreq = BD %>% count(Job) %>% rename(Frequency = n) %>% arrange(Frequency)
+Job_Freq_table = kable(JobFreq, caption = "Frequency of Bank Customers by Job")
+Job_Freq_table %>% kable_styling()
+
+dataset_column = JobFreq$Frequency # change this to actual column
+
+slice.pie_1 = dataset_column
+
+piepercent_1 = 100*round(dataset_column / sum(dataset_column), 2)
+
+label = paste(JobFreq$Job, ", ", piepercent_1, "%", sep = "") # change labels accordingly
+
+pie(slice.pie_1, labels = label, col = brewer.pal(nrow(JobFreq) ,"Pastel1"), 
+  
+    radius = 1, cex = 0.8 )
+
+title(main = "Customer Job", cex.main = 1, line = 1.5)
+
+
+#Barplot
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+barplot.data1 = as.matrix(JobFreq$Frequency) # change x accordingly
+bplot_1 = barplot(barplot.data1, names.arg = JobFreq$Job, # change names column accordingly
+                  beside = TRUE, col = brewer.pal(nrow(JobFreq) ,"Pastel1"), xlim=c(0,300),
+                  main="Frequency of Bank Customers by Job", xlab = "Number of Customers", horiz = TRUE, las = 1, cex.names = 0.6)
+mtext("Job Type", side = 2, las = 3, line = 6) # change line to be 1 less than left border
+text(x = JobFreq$Frequency, y = bplot_1, col= "black", barplot.data1, cex=0.8, pos=4) # labels the barplot with numbers, pos 4 means right of bar
+```
+```{r q1a.2), echo=FALSE}
+########################## Credit Risk ######################################
+crFreq = BD %>% count(`Credit Risk`) %>% rename(Frequency = n) %>% arrange(Frequency)
+crFreq_table = kable(crFreq, caption = "Frequency of Bank Customers by Credit Risk")
+crFreq_table %>% kable_styling()
+
+dataset_column = crFreq$Frequency # change this to actual column
+
+slice.pie_1 = dataset_column
+
+piepercent_1 = 100*round(dataset_column / sum(dataset_column), 2)
+
+label = paste(crFreq$`Credit Risk`, ", ", piepercent_1, "%", sep = "") # change labels accordingly
+
+pie(slice.pie_1, labels = label, col = brewer.pal(nrow(crFreq) ,"Pastel2"), 
+  
+    radius = 1, cex = 0.8 )
+
+title(main = "Customer Credit Risk", cex.main = 1, line = 1.5)
+```
+```{r q1a.3), echo=FALSE}
+########################## Months Employed ######################################
+hist_input1 = BD$`Months Employed` # change data accordingly
+hist_var1 = hist(hist_input1, main = "Histogram of Customer Months Employed", # change label accordingly
+                xlab = "Months Employed", ylab = "No.Of Customers", # change xlab accordingly
+                col = c("darkorange"), ylim = c(0,160), labels = TRUE) # change ylim accordingly, add in breaks = X to change breaks if necessary
+
+Emp.Group = cut(hist_input1, hist_var1$breaks, include.lowest = TRUE)
+table_var1 = table(Emp.Group)
+kable(table_var1, caption = "Frequency distribution by Months Employed") %>% kable_styling()
+```
+```{r q1a.4), echo=FALSE}
+########################## Total Account Balance ######################################
+
+options(scipen = 999)
+
+kable(table_var1, caption = "Frequency distribution by Total Account Balance") %>% kable_styling()
+
+hist_input2 = BD$Total # change data accordingly
+hist_var2 = hist(hist_input2, main = "Histogram of Customer Total Account Balance", # change label accordingly
+                xlab = "Total Account Balance", ylab = "No.Of Customers", # change xlab accordingly
+                col = c("darkorange"), ylim = c(0,400), labels = TRUE) # change ylim accordingly, add in breaks = X to change breaks if necessary
+
+ab.Group = cut(hist_input2, hist_var2$breaks, include.lowest = TRUE, dig.lab = 5)
+table_var1 = table(ab.Group)
+```
+```{r q1a.5), echo=FALSE}
+########################## ScatterPlot Relationship ######################################
+x_axis = BD$Total
+y_axis = BD$`Months Employed`
+plot(x_axis, y_axis, main = 'Scatterplot of Months Employed to Total ', xlab = 'Total', ylab = 'Months Employed')
+
+
+ggplot(data = BD, aes(x = Total, y = `Months Employed`)) +
+        geom_point()
+
+
+
+
+plot(BD$Total, BD$Age, main = 'Scatterplot of Age to Total ', xlab = 'Total', ylab = 'Age')
+```
+```{r q1b), echo=FALSE}
+########################## Credit Risk with Job ######################################
+
+BDb1 = BD %>% group_by(`Credit Risk`, Job)
+
+
+BDb1 = BDb1 %>% summarise(Freq = n())
+
+BDb1
+
+BDb1Spread = BDb1 %>% spread(key = Job, value = Freq)
+
+BDb1Spread
+
+crJobTable = kable(BDb1Spread, caption = "Contingency table for Credit Risk and Job") %>% kable_styling()
+
+crJobTable
+
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+barplot.data2 = as.matrix(BDb1Spread[,2:5])# change x accordingly
+barplot.label2 = as.matrix(BDb1Spread[,1]) 
+bar_Col2 = brewer.pal(nrow(BDb1Spread) ,"Pastel1")
+bplot_2 = barplot(barplot.data2, # change names column accordingly
+                  col=bar_Col2, ylim=c(0,300), # change ylim accordingly
+                   ylab = "No.of Customers", xlab = " ", cex.names = 0.8)
+title(main="Frequency of Customers by Credit Risk and Job", line = 2, cex.main = 1)
+legend("topright", cex=0.6, fill = bar_Col2, legend = barplot.label2)
+
+########################## Credit Risk with Housing ######################################
+
+BDb2 = BD %>% group_by(`Credit Risk`, Housing)
+BDb2 = BDb2 %>% summarise(Freq = n())
+BDb2Spread = BDb2 %>% spread(key = Housing, value = Freq)
+BDb2Spread
+crHousingTable = kable(BDb2Spread, caption = "Contingency table for Credit Risk and Housing") %>% kable_styling()
+crHousingTable
+
+
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+barplot.data2 = as.matrix(BDb2Spread[,2:4])# change x accordingly
+barplot.label2 = as.matrix(BDb2Spread[,1]) 
+bar_Col2 = brewer.pal(nrow(BDb2Spread) ,"Pastel1")
+bplot_2 = barplot(barplot.data2, # change names column accordingly
+                  col=bar_Col2, ylim=c(0,300), # change ylim accordingly
+                   ylab = "No.of Customers", xlab = " ", cex.names = 0.8)
+title(main="Frequency of Customers by Credit Risk and Housing", line = 2, cex.main = 1)
+legend("topright", cex=0.6, fill = bar_Col2, legend = barplot.label2)
+
+
+```
+```{r q1c), echo=FALSE}
+LoanHRFreq = BD %>% filter(`Credit Risk` == "High") %>% count(`Loan Purpose`) %>% rename(Frequency = n) %>% arrange(Frequency)
+LoanHRFreq
+LoandHRTable = kable(LoanHRFreq, caption= "Frequency Distribution for Loan Purpose for High CR Customers") %>% kable_styling()
+LoandHRTable
+
+
+# horizontal bar plot
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+barplot.data1 = as.matrix(LoanHRFreq$Frequency) # change x accordingly
+bplot_1 = barplot(barplot.data1, names.arg = LoanHRFreq$`Loan Purpose`, # change names column accordingly
+                  beside = TRUE, col= brewer.pal(nrow(LoanHRFreq) , "Pastel1"), xlim=c(0,80),
+                  main="Frequency of Loan Purpose for High CR Customers", xlab = "No. of Loans", horiz = TRUE, las = 1, cex.names = 0.7)
+mtext("Loan Purpose", side = 2, las = 3, line = 7)
+text(x = LoanHRFreq$Frequency, y=bplot_1, col="black", barplot.data1, cex=0.8, pos=4)
+```
+```{r q1d), echo=FALSE}
+
+BD.tot = BD %>% arrange(desc(Total))
+
+BD.tot
+
+BDnew = BD.tot %>% mutate(Percentage = Total / sum(Total))
+
+BDnew
+
+BDnewSum = BDnew %>% mutate(Cumulative = cumsum(Percentage))
+
+BDnewSum
+
+which(BDnewSum$Cumulative > 0.8)[1]
+
+
+
+nrow(BDnewSum)
+
+
+(which(BDnewSum$Cumulative > 0.8)[1] / nrow(BDnewSum)) * 100
+
+
+#24% of the top customers make up 80% of the account balances
+```

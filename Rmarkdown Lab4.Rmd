@@ -1,0 +1,255 @@
+---
+title: "Rmarkdown Lab4"
+author: "Keith Teo"
+date: "2023-09-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library("tidyverse")
+library("readxl")
+library("rpivotTable")
+library("knitr")
+library("kableExtra")
+library("RColorBrewer")
+library("psych")
+
+library("rcompanion")
+library("rstatix")
+library("Rmisc")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r importing_data}
+
+ST = read_excel("sales transaction.xlsx" , col_types = c("numeric", "text", "text", "numeric", "text", "numeric", "text", "date"), skip = 2)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r i) Computing Interval Estimates, echo=FALSE}
+########################## Confidence Interval ######################################
+
+#95% confidence interval for the MEAN of `Amount` for DVD
+DVD = ST %>% filter(Product == "DVD")
+
+Sample_Mean = DVD %>% group_by(`Amount`) %>% summarise(mean(`Amount`))
+
+Sample_SD = DVD %>% group_by(`Amount`) %>% summarise(sd(`Amount`))
+
+Upper_CI95mean = Sample_Mean - qt(0.025, df = nrow(DVD) - 1) * Sample_SD/sqrt(nrow(DVD))
+
+Lower_CI95mean = Sample_Mean  + qt(0.025, df = nrow(DVD) - 1) * Sample_SD/sqrt(nrow(DVD))
+
+print(cbind(Lower_CI95mean,Upper_CI95mean),digits = 4)
+
+#99% confidence interval for the MEAN of `Amount` for DVD
+
+Upper_CI99mean = Sample_Mean - qt(0.005, df = nrow(DVD) - 1)*Sample_SD/sqrt(nrow(DVD))
+
+Lower_CI99mean = Sample_Mean  + qt(0.005, df = nrow(DVD) - 1)*Sample_SD/sqrt(nrow(DVD))
+
+print(cbind(Lower_CI99mean,Upper_CI99mean),digits = 4)
+
+
+```
+```{r 1aii) Computing Interval Estimates, echo=FALSE}
+#90% confidence interval for proportion of DVD sale transactions with sales amount being greater than $22.
+DVD_Greater22 = DVD %>% filter(Amount > 22) 
+
+Sample_Proportion = nrow(DVD_Greater22)/ nrow(DVD) 
+
+Lower.CI90prop = Sample_Proportion + (qnorm(0.05)*sqrt(Sample_Proportion*( 1- Sample_Proportion ) / nrow(DVD) ))
+Upper.CI90prop = Sample_Proportion - (qnorm(0.05)*sqrt(Sample_Proportion*( 1- Sample_Proportion ) / nrow(DVD) ))
+print(cbind(Lower.CI90prop,Upper.CI90prop),digits = 3)
+
+
+#can the company reasonably conclude that the true proportion of DVD sale transactions with sales amount greater than $22 is 30%
+
+
+#Answer: Yes, as the proportion of 0.3 falls within the 90% confidence interval.
+```
+```{r 1aiii) Computing Interval Estimates, echo=FALSE}
+########################## Prediction Interval ######################################
+#95% prediction interval for `Amount` for sales of DVD. Explain to the store manager what this prediction interval means.
+qqnorm(DVD$Amount, ylab = "Sample Quantities for 'Amount' for DVD order", main = "Q-Q Plot for VARIABLE")
+qqline(DVD$Amount, col="red")
+shapiro.test(DVD$Amount)
+
+#H0: **Data was drawn from a normally distributed population**
+#H1: **Data was not drawn from a normally distributed population**
+
+#Not normal - Reject H0** —> **Since p-value is less than 0.05, we reject the null hypothesis and conclude that the data was not drawn from a normally distributed population**
+
+DVD$Amt.t = transformTukey(DVD$Amount, plotit = TRUE)
+
+DVD
+
+mean_amount_tukey = mean(DVD$Amt.t)
+standard_deviation_tukey = sd(DVD$Amt.t)
+Lower_PI_Tukey = mean_amount_tukey + (qt(0.025, df = (nrow(DVD) - 1)) * standard_deviation_tukey * sqrt(1 + 1 / nrow(DVD)))
+Upper_PI_Tukey = mean_amount_tukey - (qt(0.025, df = (nrow(DVD) - 1)) * standard_deviation_tukey * sqrt(1 + 1 / nrow(DVD)))
+print(cbind(Lower_PI_Tukey, Upper_PI_Tukey))
+
+#reverse transform: comments below is to derive the formula
+
+#y = x ^ lambda
+#y = x ^ 0.6
+#y ^ 1 / 0.6 = (x ^ 0.6) ^ 1 / 0.6
+#x = y ^ 1 / 0.6
+
+
+Lower_PI = (Lower_PI_Tukey) ^ (1/0.6)
+Upper_PI = (Upper_PI_Tukey) ^ (1/0.6)
+print(cbind(Lower_PI, Upper_PI))
+```
+```{r 1bi) Hypothesis Testing, echo=FALSE}
+
+#One sample test for proportion
+
+#The proportion of book sales transactions with `Amount` greater than $50 is at least 10% of book sales transactions.
+
+#H0: Proportion >= 0.1
+#H1: Proportion < 0.1
+
+book = ST %>% filter(Product == "Book")
+
+book50 = book %>% filter(Amount > 50)
+
+proportion_book50 = nrow(book50) / nrow(book)
+
+z_test_stat = (proportion_book50 - 0.10) / sqrt(0.1 * (1-0.1) / nrow(book) )
+
+z_test_stat
+
+#after we find the z-test stat we need to find the critcal value and see if it falls within the rejection region
+
+#Critical Value
+
+critical_value_95 = qnorm(0.05)
+
+critical_value_95
+
+#Since the test statistic Z is larger than the critical value (left tail), we fail to reject the null  hypothesis and conclude that the proportion of book sales transactions with `Amount` greater than $50 is at least 10% of book sales transactions.
+
+```
+```{r 1bii) Hypothesis Testing, echo=FALSE}
+
+#Two sample test for means with independent samples -> use T-test
+
+#The mean sales amount for books is the same as for DVDs
+
+#H0: Mean(books) = Mean(DVDs)
+#H1: Mean(books) != Mean(DVDs)
+
+t.test(Amount~Product, data = ST)
+
+#Since p-value is less than 0.05, we reject the null hypothesis and conclude that there is a significant difference between the mean sales amount for Books and DVDs
+
+#WELCH ANOVA Test to compare results with t test
+wa.out.t = ST %>% welch_anova_test(Amount ~ Product)
+ga.out.t = games_howell_test(ST, Amount ~ Product)
+wa.out.t
+ga.out.t
+
+#try to run with ANOVA to compare with t test
+aov.t = aov(ST$Amount ~ ST$Product)
+summary(aov.t)
+```
+```{r 1biii) Hypothesis Testing, echo=FALSE}
+
+newbooks = book %>% mutate(type = ifelse(Amount > 100, "Rare", "Normal"))
+
+newbooks
+
+#Two sample test for means with independent samples ->  use a T-test
+#The mean sales amount for rare books is greater than mean sales amount for normal books
+#H0: Mean(normal) >= Mean(rare)
+#H1: Mean(normal) < Mean(rare)
+
+t.test(Amount~type, alternative = "less", data = newbooks)
+
+#Since p < 0.05 we reject the null hypothesis and conclude that the mean sales amount for rare books is not greater than the mean sales amount for normal books.
+
+```
+```{r 1biv) Hypothesis Testing, echo=FALSE}
+#The mean sales amount for DVDs is the same across all 4 regions
+#More than 2 sample test for means -> hence we use an ANOVA test
+
+#H0: u1 = u2 = u3 = u4
+#H1: At least one u is different from the others
+
+#Check for assumptions
+#Normality Testing
+
+
+#Histograms
+East = DVD %>% filter(Region == "East")
+West = DVD %>% filter(Region == "West")
+North = DVD %>% filter(Region == "North")
+South = DVD %>% filter(Region == "South")
+
+hist(East$Amount, main = "Histogram for`East`", xlab = "Amount")
+hist(West$Amount, main = "Histogram for`West`", xlab = "Amount")
+hist(North$Amount, main = "Histogram for`North`", xlab = "Amount")
+hist(South$Amount, main = "Histogram for`South`", xlab = "Amount")
+
+#QQ plot
+par(mfcol = c(2,2))
+qqnorm(East$Amount, main = "QQplot for `East`", xlab = "Amount")
+qqline(East$Amount)
+
+qqnorm(West$Amount, main = "QQplot for `West`", xlab = "Amount")
+qqline(West$Amount)
+
+qqnorm(North$Amount, main = "QQplot for `North`", xlab = "Amount")
+qqline(North$Amount)
+
+qqnorm(South$Amount, main = "QQplot for `South`", xlab = "Amount")
+qqline(South$Amount)
+
+
+#BoxPlots
+boxplot(DVD$Amount ~ DVD$Region)
+
+#Shapiro Wilk Test
+lapply(list(East,West,North,South) ,
+       function(sa)
+       {
+         shapiro.test(sa$Amount)
+       }
+)
+
+#Check sample sizes across regions
+table(DVD$Region)
+
+#check equal variance assumption -> use fligner test
+fligner.test(Amount ~ Region, DVD)
+
+#Null Hypothesis: All populations variances are equal
+#Alternative Hypothesis: At least two of them differ
+
+#After checking the assumptions, we can conduct ANOVA or Welch ANOVA directly
+aov.amt = aov(DVD$Amount ~ as.factor(DVD$Region))
+summary(aov.amt)
+
+TukeyHSD(aov.amt)
+
+```
+```{r 1biv) WELCH ANOVA, echo=FALSE}
+wa.out1 = DVD %>% welch_anova_test(Amount ~ Region)
+gh.out1 = games_howell_test(DVD, Amount ~ Region)
+wa.out1
+gh.out1
+```
+

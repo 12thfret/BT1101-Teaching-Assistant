@@ -1,0 +1,266 @@
+---
+title: "Tutorial 7: Linear Regression II and Classification (Part 2 is due on 23 Oct 9am)"
+author: 'REPLACE WITH YOUR NAME and ID#'
+date: 'Due on 23 Oct 2023, 9:00 AM'
+output: html_document
+---
+
+## Preparation
+
+```{r load-libraries, echo=FALSE, warning = FALSE, message = FALSE}
+library("tidyverse")
+library("rpivotTable")
+library("knitr")
+library("kableExtra")
+library("RColorBrewer")
+library("ggplot2")
+library("tseries") 
+library("TTR") # One alternative for time-series in R
+library("forecast") # An alternative for time series in R
+library("car")
+library("wooldridge")
+```
+
+## Part One: Lab Session Completion and Discussion
+
+(1a) We shall be using a dataset that's available in R. Load in the dataset using `data(ChickWeight)`. The dataset will then be stored in a variable called `ChickWeight`
+
+There are 4 variables in this long-form dataset, with 578 observations, that comes from a longitudinal experiment in which chicks (baby chickens) were given different types of diets since birth, and the chicks' weights were measured at various time-points. The variables are:
+
+-   `weight`. Body weight of the chick at that time point (in grams).
+-   `Time`. A numeric variable, measuring days since birth at the time of weight measurement.
+-   `Chick`. A `factor` that represents a unique Chick. There are in total 50 unique chicks.
+-   `Diet`. A `factor` with levels 1,2,3,4 that represents the diet that the chicks were fed.
+
+```{r q1e-read-in-data, echo=TRUE}
+data(ChickWeight)
+head(ChickWeight)
+```
+
+First, let's plot some data across time. Plot the weight vs. time graphs for Chick numbers: `3, 20 and 24`. Put them all on the same graph, make sure each `Chick`'s data is connected by a line, and label each line accordingly. Subset the chick's data based on Chick = 3, 20 and 24 into their data frames. You can use plot() or ts.plot() to show time on the x axis and weight on the y axis.
+
+Which diet did each of these 3 chicks take?
+
+**Type your answer here.**
+
+```{r q1e-plot, echo=TRUE}
+subset3 = filter(ChickWeight, Chick == "3")
+subset20 = filter(ChickWeight, Chick == "20")
+subset24 = filter(ChickWeight, Chick == "24")
+
+subset = cbind(subset3$weight, subset20$weight, subset24$weight)
+
+ts.plot(subset, gpars = list(xlab = "Time", ylab = "weight", main = "Chick weight against Time", col = brewer.pal(3, "Dark2")))
+legend("topleft", legend = c(3, 20 ,24), col = brewer.pal(3, "Dark2"), lty = 1)
+
+
+```
+
+(1b) From (Q1a), you can already see that (i) there is a lot of individual variation between chicks with the same diet, and (ii) there may be differences across diets. Of course, we just took three chicks to plot, so we can't draw any conclusions just like that.
+
+Make a subset of all the chicks that took `Diet 3`. For this subset, fit a linear model predicting `weight` just using `Time`. This is a regression-based time-series model where our predictor, our "X", is just an index now that represents time. Interpret the intercept and slope coefficients.
+
+(Challenge: Try to plot all the `Chick`s on this diet on the same plot. Make sure each line corresponds to one `Chick`.)
+
+**Type your answer here.**
+
+```{r q1f-model, echo=TRUE}
+
+subset2b = ChickWeight %>% filter(Diet %in% c("3"))
+subset2b
+
+#we want to run the regression model of weight against time
+summary(lm(weight ~ Time , subset2b))
+
+#Intercept: 18.250. This implies that the average (mean) weight of a chick at birth is 18.25g (0days in Time)
+
+#Slope: 11.423. This means that, on average, chicks put on 11.42g per day
+
+ggplot(subset2b, aes(x=Time, y=weight, group=Chick, color=Chick)) + geom_line() + theme_bw()
+```
+
+(1c) Now let's look at two groups. Make a subset of `Chicks` who are on `Diet 3` and `Diet 1`. Make a dummy variable to indicate which `Diet` they are on. (Recall: Coding a qualitative variable. What is the general rule for the number of indicator variables? To give you some practice in manipulating variables, let's say that 3 is the reference group, and this dummy variable should be 1 if the Chick is on Diet 1 and 0 if the Chick is on Diet 3).
+
+If I'm interested in seeing whether the `Diet` affects `Chicks`' growth, what is the linear regression model I should test? Run this model, and interpret the coefficients on the variables in the model. Which of the two `Diet`s seem to be better for growth?
+
+(Challenge: Try to plot all the Chicks in this analysis on the same plot. Similar to Q1f, make sure each Chick corresponds to one line. But for this graph, let's color the lines by Diet. This may help you to visualize the coefficients you see in the model.)
+
+**Type your answer here.**
+
+```{r q1g-model, echo=TRUE}
+
+subset2c = ChickWeight %>% filter(Diet %in% c("3", "1")) %>% mutate(Dummy = factor(Diet, levels = c("3", "1"), labels= c("3", "1")))
+
+summary(lm(weight ~ Time*Dummy, subset2c))
+
+#Intercept = 18.250. When the value of all predictors are 0 and the chick in on Diet3, the mean value of weight is 18.235g
+
+#Coefficient on Time = 11.423. This means that, on average, chicks on Diet3 put on 11.42g per day
+
+#Coefficient on Dummy: 12.68. This means that on average, at birth chicks on Diet 1 are 12.68g heavier than chicks on Diet 3
+
+#Coefficient on Time*Dummy: - 4.5811. This means that, on average, chicks on Diet 1 put on -4.5811g per day less than chicks on Diet3.
+```
+
+(1d) Finally, let's look at all four `Diet`s. This last part is building up from the previous sub-parts. You already know enough to do this, you just have to be very careful in interpreting each step.
+
+Now, let's use the full dataset. `ChickWeight$Diet` is already a factor, so let's just use `Diet` as the moderator, and see if `Diet` moderates growth rates. You should be running the same `lm()` model
+
+What is the reference group of: `ChickWeight$Diet`?
+
+How do you interpret each interaction coefficients?
+
+Which seems to be the best `Diet` for growth (i.e., with the highest growth rate)? Which seems to be the worst?
+
+(challenge points for plotting all these results. One way I would recommend visualizing them is putting all the `Chick`s in one `Diet` on one graph, and have four graphs side-by-side. If you use ggplot it's called facet-ing. Your tutor will show this graph in class using `ggplot`, but I will leave this as a bonus challenge for you.)
+
+**Type your answer here.**
+
+```{r , echo=TRUE}
+
+summary(lm(weight ~ Time * Diet, ChickWeight))
+
+#intercept: 30.93 this means average weight of a chick on Diet 1 at birth is 30.93
+
+#Coefficient on Time = 6.8418
+#This means that, on average, chicks on Diet 1 put on 6.84g per day
+
+#Coefficient on Diet2: -2.2974.
+#This means that, on average, at birth chicks on Diet 2 are 2.29g lighter than chicks on Diet 1 (reference level).
+
+#Coefficient on Diet3: -12.6807.
+#This means that, on average, at birth chicks on Diet 3 are 12.68g lighter than chicks on Diet 1 (reference level).
+
+#Coefficient on Diet4: -0.1389.
+#This means that, on average, at birth chicks on Diet 4 are 0.14g lighter than chicks on Diet 1 (reference level).
+
+################################## Interaction Term #####################################
+
+#Coefficient on Time: Diet2 : 1.76.
+#This means that, on average, chicks ON DIET 2 put on 1.76g per day MORE than chicks on Diet 1. 
+
+#Coefficient on Time:Diet3 : 4.58.
+#This means that, on average, chicks ON DIET 3 put on 4.58g per day MORE than chicks on Diet 1. 
+
+#Coefficient on Time:Diet4 : 2.87.
+#This means that, on average, chicks ON DIET 4 put on 2.87g per day MORE than chicks on Diet 1.
+
+
+```
+
+## Part Two: Assignment Submission (25 points)
+
+### Question 2 (total 16 points)
+
+For this tutorial question, you are to study the selected variables on the birth weights of infants in U.S. At a population level, the proportion of infants with a low birth weight is an indicator of a multifaceted public health problem that includes long-term maternal malnutrition, ill-health and poor health care in pregnancy.
+
+This dataset contains information of birth weights at the Medical Centre, Springfield, Massachusetts during 1986 (Venables & Ripley, 2002).
+
+You are to use "birthwgt.csv" for this tutorial question.
+
+-   Dataset required: birthwgt.csv
+
+First, load in the cross-sectional data for this question. There are 189 observations on 10 variables about birth weights. Key variables are listed below:
+
+1.  birthwt.below.2500: birth weight less than 2.5 kg
+2.  mother.age: mother's age in years
+3.  mother.weight: mother's weight in pounds at last menstrual period
+4.  race: mother's race (black, other, white)
+5.  mother.smokes : smoking status during pregnancy
+6.  previous.prem.labor: number of previous premature labours
+7.  hypertension: history of hypertension
+8.  uterine.irr: presence of uterine irritability
+9.  physician.visits: number of physician visits during the first trimester
+10. birthwt.grams: birth weight in grams
+
+*Before attempting this section, it is advisable to have an understanding of key concepts in other considerations for regression analysis.*
+
+```{r q2-read-dataset, echo=TRUE}
+#read.csv ... 
+```
+
+Q2(a) Run a linear regression to understand how '*birthwt.grams'* varies with the mother's age and smoking status. Show the regression output. (1 point)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(b) Using the **`aov()`** function, provide the ANOVA table. Provide step-by-step calculation of the coefficient of determination (R-squared) based on the table. Interpret the R-squared value in the context of regression analysis. (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(c) Perform an appropriate hypothesis test to assess the significance of the entire model in 2(a). Provide a clear explanation of your conclusion. (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+We wish to investigate differences in birth weight among mothers of different races.
+
+Q2(d) Convert the 'race' variable into a factor, setting white mothers as the baseline. Then, fit a multiple linear regression model to predict '*birthwt.grams'* using *mother.weight* and *race* as the independent variables. (1 point)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Based on the regression output, answer the following questions:
+
+Q2(e) How do you interpret this coefficient estimate for the categorical dummy variable '*raceblack*'? Is this significant? (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(f) Based on your knowledge on regression analysis, what can you comment about the birth weight of babies born to 'black' mothers with respect to 'other races' mothers? (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(g) Construct a scatterplot with birth weight on the y-axis and mother's age on the x-axis. Colour the points according to mother's race. For *each* race category: *black, white, others*, plot a linear regression line using the 'mother.age' as the independent variable and 'birthwt.grams' as the dependent variable. You should display all the three linear regression lines on your scatterplot. (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(h) Comment on your observations for the regression lines plotted in part 2(g). (1 point)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(i) Fit a linear regression model that includes the mother's age, mother's race as well as the potential interactions between mother's age and race on their effect on birth weight. (1 point)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q2(j) Is the interaction term between black mothers and age statistically significant? How would you interpret it? (2 points)
+
+### Question 3 (Total 9 points)
+
+-   Dataset required: birthwgt.csv
+
+*Before attempting this section, it is advisable to have an understanding of key concepts in other considerations for classification*
+
+Q3(a) Fit an appropriate model with '*birthwt.below.2500*' as the dependent variable and '*mother.age'*,'*mother.weight'*, and '*mother.smokes'* as the independent variables. Write the mathematical form of the appropriate regression model you plan to use with its respective variables. (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q3(b) Run your model in R and interpret the coefficients before mother.age and mother.smokes. Based on the results, do you think the mother's age affects the likelihood of having babies with birth weight below 2500g, and why? (4 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q3(c) Finally, given a mother who is aged 40, does not smoke and weighs 155 pounds. Predict the probability for having a baby with birth weight below 2500g. (2 points)
+
+::: {style="color: red"}
+**Type your answer here**
+:::
+
+Q3(d) Successfully debug the Rmarkdown file and produce a HTML for submission. (1 point)

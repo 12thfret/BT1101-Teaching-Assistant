@@ -1,0 +1,229 @@
+---
+title: "Rmarkdown Lab3"
+author: "Keith Teo"
+date: "2023-09-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library("tidyverse")
+library("readxl")
+library("rpivotTable")
+library("knitr")
+library("kableExtra")
+library("RColorBrewer")
+library("psych")
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r importing_data}
+
+ST = read_excel("sales transaction.xlsx" , col_types = c("numeric", "text", "text", "numeric", "text", "numeric", "text", "date"), skip = 2)
+
+```
+
+```{r 1ai), echo=FALSE}
+
+#Frequency Distributions for regions customers are from.
+########################## Regions ######################################
+#Region Frequency and Chart
+
+Region_Freq = ST %>% count(Region) %>% rename(Frequency = n) %>% arrange(Frequency)
+
+Region_Freq
+
+Region_Freq_table = kable(Region_Freq, caption = "Frequency of Customers by Region")
+
+
+Region_Freq_table %>% kable_styling()
+
+#Pie Chart for Housing
+
+dataset_column = Region_Freq$Frequency # change this to actual column
+
+slice.pie_1 = dataset_column
+
+piepercent_1 = 100*round(dataset_column / sum(dataset_column), 2)
+
+label = paste(Region_Freq$Region, ", ", piepercent_1, "%", sep = "") # change labels accordingly
+
+pie(slice.pie_1, labels = label, col = brewer.pal(nrow(Region_Freq) ,"Pastel2"), 
+  
+    radius = 1, cex = 0.8 )
+
+title(main = "Frequency of Customers by Region", cex.main = 1, line = 1.5)
+
+#Bar Chart
+
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+bplot_1 = barplot(Region_Freq$Frequency, ylab = "Number of Customers" , xlab = "Regions", names.arg = Region_Freq$Region,
+                  col = brewer.pal(nrow(Region_Freq) ,"Pastel1"), ylim = c(0,200),
+                  main="Frequency of Customers by Region", cex.names = 0.6)
+
+mtext("Job Type", side = 2, las = 3, line = 6) # change line to be 1 less than left border
+text(x = Region_Freq$Frequency, y = bplot_1, col= "black", cex=0.8, pos=4) # labels the barplot with numbers, pos 4 means right of bar
+
+
+```
+
+```{r 1aii), echo=FALSE}
+#Frequency Distributions for payment mode used by customers.
+########################## Payment ######################################
+#Region Frequency and Chart
+Payment_Freq = ST %>% count(Payment) %>% rename(Frequency = n) %>% arrange(Frequency)
+
+Payment_Freq
+
+Payment_Freq_table = kable(Payment_Freq, caption = "Frequency of Customers for each Payment Mode")
+
+#Pie Chart
+
+dataset_column = Payment_Freq$Frequency # change this to actual column
+
+slice.pie_1 = dataset_column
+
+piepercent_1 = 100*round(dataset_column / sum(dataset_column), 2)
+
+label = paste(Payment_Freq$Payment, ", ", piepercent_1, "%", sep = "") # change labels accordingly
+
+pie(slice.pie_1, labels = label, col = brewer.pal(nrow(Payment_Freq) ,"Pastel2"), 
+  
+    radius = 1, cex = 0.8 )
+
+title(main = "Frequency of Customers for each Payment Mode", cex.main = 1, line = 1.5)
+
+#Bar Chart
+
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+bplot_1 = barplot(Payment_Freq$Frequency, ylab = "Number of Customers" , xlab = "Payment Mode", names.arg = Payment_Freq$Payment, 
+                  col = brewer.pal(nrow(Payment_Freq) ,"Pastel1"), ylim = c(0,350),
+                  main="Frequency of Customers for each Payment Mode", cex.names = 0.6)
+
+Payment_Freq$Frequency
+
+mtext("Job Type", side = 2, las = 3, line = 6) # change line to be 1 less than left border
+text(bplot_1, Payment_Freq$Frequency, Payment_Freq$Frequency, pos = 3, cex = 0.8)
+```
+```{r 1bi), echo=FALSE}
+Amount_describe = describe(ST$Amount)
+Amount_describe = Amount_describe%>%select(-c(range, trimmed, mad, se, max, min))
+Amount_describe
+Amount_describe$vars[1] = "Amount"
+kable(Amount_describe, row.names = FALSE, caption = "Descriptive StatistSsics for `Amount`") %>% kable_styling()
+```
+```{r 1bii) Histogram Density Plot QQ Plot, echo = FALSE}
+# Histogram
+hist_input1 = ST$Amount # change data accordingly
+hist_var1 = hist(hist_input1, main = "Histogram of ST$Amount", # change label accordingly
+                xlab = "ST$Amount", ylab = "Frequency", # change xlab accordingly
+                col = c("darkorange"), ylim = c(0,250), labels = TRUE) # change ylim accordingly, add in breaks = X to change breaks if necessary
+
+#Density Plot
+plot(density(ST$Amount))
+
+
+#normal Q-Q plot
+qqnorm(ST$Amount)
+qqline(ST$Amount, col = 2)
+
+
+#For the Normal Q-Q plot, we can observe that QQ line does not passes through most of the plot points for QQ plot indicating that the data is not normally distributed. 
+
+```
+```{r 1bii) Shapiro Wilk, echo = FALSE} 
+shapiro.test(ST$Amount)
+
+#H0: **Data was drawn from a normally distributed population**
+#H1: **Data was not drawn from a normally distributed population**
+
+#Normal - Do not reject H0** —> **Since p-value is greater than 0.05, we do not reject the null hypothesis and conclude that the data was drawn from a normally distributed population
+
+#Not normal - Reject H0** —> **Since p-value is less than 0.05, we reject the null hypothesis and conclude that the data was not drawn from a normally distributed population**
+```
+
+```{r 1biii) Outliers, echo = FALSE} 
+#Histogram analysis
+
+hist_input1 = ST$Amount # change data accordingly
+hist_var1 = hist(hist_input1, main = "Histogram of ST$Amount", # change label accordingly
+                xlab = "ST$Amount", ylab = "Frequency", # change xlab accordingly
+                col = c("darkorange"), ylim = c(0,250), labels = TRUE) # change ylim accordingly, add in breaks = X to change breaks if necessary
+
+# From the histogram, we observe a bell curve shape which suggests that the data is normally distributed.
+# From the histogram, we do not observe a bell curve shape which suggests that the data is not normally distributed.
+
+#Boxplot analysis
+
+boxplot(ST$Amount, range = 3, horizontal = TRUE)
+
+boxplot(ST$Amount, range = 1.5, horizontal = TRUE)
+
+# From the boxplots above, there seem to be outliers. There are no mild outlier and all the values are extreme outliers which lie more than 3*IQR left of Q1 or right of Q3.
+
+```
+
+```{r 1biv) Book vs DVD, echo = FALSE} 
+Book_DVD = ST %>% group_by(Product) %>% summarise(mean = mean(Amount) , SD = sd(Amount))
+kable(Book_DVD) %>% kable_styling()
+
+
+#Group bar plot
+par(mar=(c(5,10,4,2)+0.1)) # c(bottom, left, top, right), default is 5,4,4,2, change accordingly
+barplot.data3 = as.matrix(Book_DVD[,2:3]) # change x accordingly
+barplot.label3 = as.matrix(Book_DVD[,1])
+bar_Col3 = brewer.pal(nrow(Book_DVD) , "Pastel2")
+bplot_3 = barplot(barplot.data3, 
+                  beside = TRUE, col= brewer.pal(nrow(Book_DVD), "Pastel2"), ylim=c(0,100), # change ylim accordingly, change rainbow accordingly
+                  main="Mean and Std Deviation of Amount across Products", ylab = "Amount", xlab = " ",cex.names = 0.8)
+legend("topright", cex=0.6, fill = bar_Col3, legend = barplot.label3) # change position accordingly
+```
+```{r 1bv) Book vs DVD, echo = FALSE} 
+books = ST %>% filter(Product == "Book")
+DVD = ST %>% filter(Product == "DVD")
+
+#Histogram
+hist(books$Amount)
+hist(DVD$Amount)
+boxplot_books = boxplot(books$Amount, horizontal = TRUE, range = 3)
+boxplot_books$out
+```
+```{r 1c)) Book vs DVD, echo = FALSE}
+#Scatter Plotcorr.test(as.numeric(DVD$`Time Of Day`) , DVD$Amount)
+
+x_axis = DVD$`Time Of Day`
+y_axis = DVD$Amount
+plot(x_axis, y_axis, main = 'Scatterplot of Amount to Time of Day for DVD Sales ', xlab = 'Time of Day', ylab = 'Amount')
+
+#correlation
+cor(as.numeric(DVD$`Time Of Day`) , DVD$Amount)
+corr.test(as.numeric(DVD$`Time Of Day`) , DVD$Amount)
+
+# Since the correlation is positive and the value is less than 0.3, there is a weak positive linear relationship.
+
+```
+```{r 1d) Proportions and Probability, echo = FALSE}
+#Proportion of book sales that have amount greater than 60
+book_proportion = books %>% filter(Amount > 60)
+(nrow(book_proportion) / nrow(books) )* 100
+
+#Proportion of DVD sales transactions that are from the Web
+DVD_proportion = DVD %>% filter(Source == "Web")
+nrow(DVD_proportion) / nrow(DVD) * 100
+
+#mean = 20, sd = 4, find probability of DVD sales amount being greater than 25
+
+#using pnorm returns the Probability
+#using qnorm returns the z test statistic
+#assuming DVD sales is normally distributed
+#We want to find greater than 25 therefore lower.tail = FALSE
+pnorm(25, mean = 20, sd = 4, lower.tail = FALSE)
+
+```
