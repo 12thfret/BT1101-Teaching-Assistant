@@ -59,7 +59,21 @@ Topics Covered: Data Visualization, Linear Regression, Logistic Regression, Time
 - To be able to compute proportions
 - To be able to compute probabilities of events that approximate the normal distribution, given population parameters
 <br />
+**Notes on Probability and Stats**
 [Probability__Stats.pdf](https://github.com/12thfret/BT1101-Teaching-Assistant/files/12916928/Probability__Stats.pdf)
+
+## Sample & Estimation and Hypothesis Testing
+**In the fourth lab session, the learning objectives are:**
+<br />
+- To be able to compute and interpret confidence intervals for means and proportion 
+- To be able to compute and interpret prediction intervals
+- To be able to conduct one sample test for population mean and proportion
+- To be able to conduct two sample tests for population means and variances
+- To be able to conduct hypothesis test involving comparison of sample means or variances across more than 2 samples.
+<br />
+<img width="729" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/e671af7d-3231-4363-ba25-583424209fb3">
+<br />
+<img width="593" alt="image" src="https://github.com/12thfret/BT1101-Teaching-Assistant/assets/125169657/3ea42755-0d54-49c2-9c06-eb631eb96c8e">
 
 
 
